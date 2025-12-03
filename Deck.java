@@ -26,5 +26,10 @@ import java.util.Arrays;
  *
  */
 public class Deck {
+    private int numberOfCards;
+    private Card[] cards;
+    Deck(Card[] cards){}
+
+
     
 }
