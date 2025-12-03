@@ -14,13 +14,21 @@ public class Card {
         this.suit = suit;
         this.rank = rank;
     }
+    
+    public Suit getSuit() {
+        return suit;
+    }
+
+    public Rank getRank() {
+        return rank;
+    }
+
     public String toString(){
         return rank + " " + suit;
     
     }
     public boolean equals(Card other){
         return this.suit == other.suit && this.rank == other.rank;
-        
 
     }
 }
