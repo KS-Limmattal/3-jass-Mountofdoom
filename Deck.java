@@ -70,6 +70,16 @@ public class Deck {
         this.cards = Arrays.copyOf(this.cards, this.numberOfCards - 1);
         this.numberOfCards--;
     }
+    public void shuffle(){ // Karten durchmischen
+        Random rnd = new Random();
+        for (int i = 0; i < this.numberOfCards; i++){      
+            int j = rnd.nextInt(this.numberOfCards);
+            //Karten an Position i und j tauschen
+            Card temp = this.cards[i];
+            this.cards[i] = this.cards[j];
+            this.cards[j] = temp;
+        }
+        }
 }
 
 
