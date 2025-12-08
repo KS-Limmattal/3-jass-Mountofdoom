@@ -28,8 +28,50 @@ import java.util.Arrays;
 public class Deck {
     private int numberOfCards;
     private Card[] cards;
-    Deck(Card[] cards){}
+    Deck(Card[] cards){    //Konstruktor mit gegebenen Karten 
+        this.cards = cards;
+        this.numberOfCards = cards.length;
+    }
+    Deck(){
+        this.numberOfCards = 36; // Konstruktor für volles Deck
+        this.cards = new Card[numberOfCards];
+        int index = 0;
+        for(Suit suit : Suit.values()){
+            for(Rank rank : Rank.values()){
+                this.cards[index] = new Card(suit, rank);
+                index++;
+            }
+        }
+        if (index != numberOfCards){ //wurde das vollständige Deck korrekt erzeugt?
+            System.out.println("Fehler beim Erzeugen des Decks!");
+        }
+
+    }
+    public Card[] getCards(){
+        return this.cards;
+    }
+    public void addCard(Card card){ //Karte zum Deck hinzufügen
+        for (Card c : this.cards){ //Überprüfen, ob Karte schon im Deck ist
+            if (c != null && c.equals(card)){
+                System.out.println("Warnung: Karte bereits im Deck vorhanden!");
+                return;
+            }
+        }
+        //Karte hinzufügen
+        this.cards = Arrays.copyOf(this.cards, this.numberOfCards + 1);
+        this.cards[this.numberOfCards] = card;
+        this.numberOfCards++;
+    }
+    public void pop(){ //letzte Karte entfernen
+        if (this.numberOfCards == 0){
+            System.out.println("Warnung: Keine Karten im Deck zum Entfernen!");
+            return;
+        }
+        this.cards = Arrays.copyOf(this.cards, this.numberOfCards - 1);
+        this.numberOfCards--;
+    }
+}
 
 
     
-}
+
