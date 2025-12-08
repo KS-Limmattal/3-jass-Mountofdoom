@@ -62,13 +62,15 @@ public class Deck {
         this.cards[this.numberOfCards] = card;
         this.numberOfCards++;
     }
-    public void pop(){ //letzte Karte entfernen
+    public Card pop(){ //letzte Karte entfernen
         if (this.numberOfCards == 0){
             System.out.println("Warnung: Keine Karten im Deck zum Entfernen!");
-            return;
+            return null;
         }
+        Card removed = this.cards[this.numberOfCards - 1];
         this.cards = Arrays.copyOf(this.cards, this.numberOfCards - 1);
         this.numberOfCards--;
+        return removed;
     }
     public void shuffle(){ // Karten durchmischen
         Random rnd = new Random();
