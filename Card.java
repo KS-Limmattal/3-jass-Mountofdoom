@@ -24,7 +24,7 @@ public class Card {
     }
 
     public String toString(){
-        return rank + " " + suit;
+        return suit + " " + rank;
     
     }
     public boolean equals(Card other){
