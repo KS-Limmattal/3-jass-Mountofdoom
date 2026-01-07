@@ -13,11 +13,11 @@ public class Jass {
     public static int getTrumpValue(Rank rank) {
         switch (rank) {
             case ASS:
-                return 11;
+                return 13;
             case KOENIG:
-                return 4;
+                return 12;
             case OBER:
-                return 3;
+                return 11;
             case UNDER:
                 return 21;
             case BANNER:
@@ -27,17 +27,51 @@ public class Jass {
             case ACHT:
                 return 8;
             case SIEBEN:
-                return 0;
+                return 7;
             default:
                 return 0;
         }
     }
-   
+
+       public static int getTrumpValuePoints(Rank rank) {
+        switch (rank) {
+            case ASS:
+                return 11;
+            case KOENIG:
+                return 4;
+            case OBER:
+                return 3;
+            case UNDER:
+                return 20;
+            case BANNER:
+                return 10;
+            case NEUN:
+                return 14;
+            default:
+                return 0;
+        }
+    }
+        public static int getNonTrumpPoints(Rank rank) {
+        switch (rank) {
+            case ASS:
+                return 11;
+            case KOENIG:
+                return 4;
+            case OBER:
+                return 3;
+            case UNDER:
+                return 2;
+            case BANNER:
+                return 10;
+            default:
+                return 0;
+        }
+    }
     
     
     public static Card selectCardToPlay(Deck playerHand, Card leadCard, Suit trumpf) {
         if (leadCard == null) {
-            // Erste Karte - wähle zufällige Karte
+            // Erste Karte - wähle erste verfügbare Karte
             for (Card card : playerHand.getCards()) {
                 if (card != null) {
                     return card;
@@ -45,54 +79,57 @@ public class Jass {
             }
             return null;
         }
+        
+        // Hole gültige Karten mit der validCards Methode
+        Card[] playedCards = {leadCard};
+        Card[] valid = playerHand.validCards(trumpf, playedCards);
+        
+        if (valid.length == 0) {
+            // Keine gültigen Karten - spiele beliebige Karte
+            for (Card card : playerHand.getCards()) {
+                if (card != null) {
+                    return card;
+                }
+            }
+            return null;
+        }
+        
         Suit leadSuit = leadCard.getSuit();
-        Rank leadRank = leadCard.getRank();
-        // Versuche gleiche Farbe mit höherem Rang zu spielen
+        
+        // Filtere zuerst nach Karten mit gleicher Farbe wie leadCard
         Card bestSameSuit = null;
-        for (Card card : playerHand.getCards()) {
-            if (card != null && card.getSuit() == leadSuit) {
-                if (bestSameSuit == null || card.getRank().ordinal() > leadRank.ordinal()) {
+        for (Card card : valid) {
+            if (card.getSuit() == leadSuit) {
+                if (bestSameSuit == null || card.getRank().ordinal() > bestSameSuit.getRank().ordinal()) {
                     bestSameSuit = card;
                 }
             }
         }
+        
         if (bestSameSuit != null) {
             return bestSameSuit;
-        } 
-        // Keine gleiche Farbe - versuche höchste Trumpfkarte zu spielen
+        }
+        
+        // Keine gleiche Farbe - wähle beste Trumpfkarte
         Card bestTrumpCard = null;
         int bestTrumpValue = -1;
         
-        // Prüfe ob leadCard eine Trumpfkarte ist
-        int leadTrumpValue = -1;
-        if (leadCard.getSuit() == trumpf) {
-            leadTrumpValue = getTrumpValue(leadCard.getRank());
-        }
-        
-        for (Card card : playerHand.getCards()) {
-            if (card != null && card.getSuit() == trumpf) {
-                int cardTrumpValue = getTrumpValue(card.getRank());
-                // Versuche höhere Trumpfkarte als leadCard zu spielen
-                if (cardTrumpValue > leadTrumpValue && cardTrumpValue > bestTrumpValue) {
+        for (Card card : valid) {
+            if (card.getSuit() == trumpf) {
+                int trumpValue = getTrumpValue(card.getRank());
+                if (trumpValue > bestTrumpValue) {
                     bestTrumpCard = card;
-                    bestTrumpValue = cardTrumpValue;
-                } else if (bestTrumpCard == null) {
-                    // Falls keine höhere gefunden, nimm irgendeine Trumpfkarte
-                    bestTrumpCard = card;
-                    bestTrumpValue = cardTrumpValue;
+                    bestTrumpValue = trumpValue;
                 }
             }
         }
+        
         if (bestTrumpCard != null) {
             return bestTrumpCard;
         }
-        // Weder gleiche Farbe noch Trumpf - spiele zufällige Karte
-        for (Card card : playerHand.getCards()) {
-            if (card != null) {
-                return card;
-            }
-        }
-        return null; // Keine Karten mehr
+        
+        // Fallback: spiele erste gültige Karte
+        return valid[0];
     }
     public static int getPlayerWithRosenBanner(Deck[] playerDecks) {
         Card rosenBanner = new Card(Suit.ROSEN, Rank.BANNER);
@@ -119,7 +156,7 @@ public class Jass {
                 currentDeck.pop(); // Karte aus dem Deck entfernen
                 System.out.println("Spieler " + (currentPlayer + 1) + " spielt: " + playedCard);
                 // Bestimme die höchste Karte
-                if (playedCard.getSuit() == highestCard.getSuit()) {
+                if (playedCard.getSuit() == highestCard.getSuit() && playedCard.getSuit() != trumpf) {
                     if (playedCard.getRank().ordinal() > highestCard.getRank().ordinal()) {
                         highestCard = playedCard;
                         winningPlayer = currentPlayer;
@@ -128,10 +165,20 @@ public class Jass {
                     highestCard = playedCard;
                     winningPlayer = currentPlayer;
                 }
+                else if (playedCard.getSuit() == trumpf && highestCard.getSuit() == trumpf) {
+                    if (Jass.getTrumpValue(playedCard.getRank()) > Jass.getTrumpValue(highestCard.getRank())) {
+                        highestCard = playedCard;
+                        winningPlayer = currentPlayer;
+                    }
+                }
             }
         }
         System.out.println("Spieler " + (winningPlayer + 1) + " gewinnt die Runde mit der Karte: " + highestCard);
     }
+        
+
+
+    
     public static void main(String[] args){
         /* 
         Deck deck = new Deck(); //erstell ein neues Deck
@@ -177,10 +224,11 @@ public class Jass {
         
         int startingPlayer = getPlayerWithRosenBanner(playerDecks);
         if (startingPlayer != -1) {
-            System.out.println("Spieler " + (startingPlayer + 1) + " hat die ROSEN BANNER und beginnt.");
+            System.out.println("Spieler " + (startingPlayer + 1) + " hat den ROSEN BANNER und beginnt.");
         } else {
             System.out.println("Keine Spieler hat die ROSEN BANNER.");
         }
+        playRound(playerDecks, trumpf, startingPlayer);
         
         
         
