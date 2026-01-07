@@ -64,7 +64,7 @@ public class Deck {
     }
     public Card pop(){ //letzte Karte entfernen
         if (this.numberOfCards == 0){
-            System.out.println("Warnung: Keine Karten im Deck zum Entfernen!");
+            System.out.println("Wavang: Keine Karten im Deck zum Entfernen!");
             return null;
         }
         Card removed = this.cards[this.numberOfCards - 1];
@@ -82,6 +82,21 @@ public class Deck {
             this.cards[j] = temp;
         }
         }
+    public Card[] validCards(Suit trump, Card[] playedCardsThisRound){ //gibt die gültigen Karten zurück
+        Card[] validCards = new Card[0]; 
+        Suit suitThisRound = playedCardsThisRound[0].getSuit();
+        for(Card c : this.cards){
+            if (c.getSuit() == suitThisRound){
+                validCards = Arrays.copyOf(validCards, validCards.length + 1);
+                validCards[validCards.length - 1] = c;
+            }
+            else if (c.getSuit() == trump){
+                validCards = Arrays.copyOf(validCards, validCards.length + 1);
+                validCards[validCards.length - 1] = c;
+            }
+        }
+        return validCards;
+    }
 }
 
 
