@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Diese Klasse ist die Hauptklasse und enthält die main-Methode
@@ -142,9 +143,11 @@ public class Jass {
         }
         return -1; // Karte nicht gefunden
     }
-    public static void playRound(Deck[] playerDecks, Suit trumpf, int startingPlayer) {
+    public static int playRound(Deck[] playerDecks, Suit trumpf, int startingPlayer, int[] playerPoints) {
         Deck startingDeck = playerDecks[startingPlayer];
         Card leadCard = startingDeck.pop();
+        Deck playedCards = new Deck(new Card[] {});
+        playedCards.addCard(leadCard);
         System.out.println("Spieler " + (startingPlayer + 1) + " spielt: " + leadCard);
         Card highestCard = leadCard;
         int winningPlayer = startingPlayer;
@@ -152,8 +155,21 @@ public class Jass {
             int currentPlayer = (startingPlayer + i) % playerDecks.length;
             Deck currentDeck = playerDecks[currentPlayer];
             Card playedCard = selectCardToPlay(currentDeck, leadCard, trumpf);
+            
             if (playedCard != null) {
-                currentDeck.pop(); // Karte aus dem Deck entfernen
+                // Entferne die spezifische Karte aus dem Deck
+                Card[] currentCards = currentDeck.getCards();
+                for (int j = 0; j < currentCards.length; j++) {
+                    if (currentCards[j] != null && currentCards[j].equals(playedCard)) {
+                        // Karte gefunden - temporär an letzter Position platzieren und dann pop
+                        Card temp = currentCards[currentCards.length - 1];
+                        currentCards[currentCards.length - 1] = currentCards[j];
+                        currentCards[j] = temp;
+                        currentDeck.pop();
+                        break;
+                    }
+                }
+                playedCards.addCard(playedCard);
                 System.out.println("Spieler " + (currentPlayer + 1) + " spielt: " + playedCard);
                 // Bestimme die höchste Karte
                 if (playedCard.getSuit() == highestCard.getSuit() && playedCard.getSuit() != trumpf) {
@@ -174,8 +190,44 @@ public class Jass {
             }
         }
         System.out.println("Spieler " + (winningPlayer + 1) + " gewinnt die Runde mit der Karte: " + highestCard);
+        //Punkte berechnen
+        int roundPoints = 0;
+        for (Card card : playedCards.getCards()) {
+            if (card != null) {
+                if (card.getSuit() == trumpf) {
+                    roundPoints += getTrumpValuePoints(card.getRank());
+                } else {
+                    roundPoints += getNonTrumpPoints(card.getRank());
+                }
+            }
+        }
+        playerPoints[winningPlayer] += roundPoints;
+        System.out.println("Spieler " + (winningPlayer + 1) + " erhält " + roundPoints + " Punkte.");
+        return winningPlayer;
     }
         
+    public static void playGame(Deck[] playerDecks, Suit trumpf, int startingPlayer, int[] playerPoints) {
+        int currentStarter = startingPlayer;
+        for(int round = 1; round <= 9; round++){
+            System.out.println("\nRunde " + round + " beginnt.");
+            currentStarter = playRound(playerDecks, trumpf, currentStarter, playerPoints);
+            System.out.println("Runde " + round + " endet.");
+            
+            // Pause zwischen den Runden
+            try {
+                TimeUnit.MILLISECONDS.sleep(1500); // 1.5 Sekunden Pause
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        System.out.println("Spiel endet. Endpunktestand:");
+        for(int i = 0; i < playerPoints.length; i++){
+            System.out.println("Spieler " + (i + 1) + ": " + playerPoints[i] + " Punkte.");
+        }
+        
+
+
+    }
 
 
     
@@ -213,6 +265,12 @@ public class Jass {
         Deck deckPlayer3 = new Deck(cardsPlayer3);
         Deck deckPlayer4 = new Deck(cardsPlayer4);
 
+        int player1Points = 0;
+        int player2Points = 0;
+        int player3Points = 0;
+        int player4Points = 0;
+        int[] playerPoints = {player1Points, player2Points, player3Points, player4Points};
+
         Deck[] playerDecks = {deckPlayer1, deckPlayer2, deckPlayer3, deckPlayer4};
         //System.out.println("Karten für Spieler 1:");
         //for (Card card : cardsPlayer1) {
@@ -228,7 +286,7 @@ public class Jass {
         } else {
             System.out.println("Keine Spieler hat die ROSEN BANNER.");
         }
-        playRound(playerDecks, trumpf, startingPlayer);
+        playGame(playerDecks, trumpf, startingPlayer, playerPoints);
         
         
         
